@@ -1,0 +1,26 @@
+Upload - U
+Download - D
+List - L
+Rename - R
+Move - M
+Help - H
+
+OPTIONAL:
+Version - V
+Sync - Y
+Share - H
+
+
+Communication protocol:
+1. Client send the command (one char)
+2. Server recieves command (one char)
+3. When server is ready, server requests payload
+    a. if upload, file
+    b. if rename, old name and new name
+    c. if download, name of file
+    d. if list, nothing server replies with list
+    e. if move, old path and new path
+    f. if delete, request deletion path
+4. client sends payload
+5. if deletion, confirmation
+6. Done
