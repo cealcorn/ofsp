@@ -7,6 +7,10 @@ Rename - R
 Move - M
 Help - H
 
+From server:
+Error - E
+Confirmation - C
+
 OPTIONAL:
 Version - V
 Sync - Y
