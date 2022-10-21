@@ -1,86 +1,101 @@
 package server;
 
+import java.io.File;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-public class server{
+public class server {
     private static final int MAX_CLIENT_MESSAGE_LENGTH = 2048;
 
+    server thisServer;
 
-    server(){
+    // private static boolean Processing = false; not needed because of single
+    // threading
+
+    server() {
+        thisServer = this;
     }
 
-    private static void print_usage(){
+    private static void print_usage() {
         System.out.println("USAGE: java ServerTCP.java listening_port");
     }
 
-    public static void main (String[] args){
-        if(args.length != 1){
+    public static void main(String[] args) {
+        if (args.length != 1) {
             print_usage();
             return;
         }
 
         int port;
-        try{
+        try {
             port = Integer.parseInt(args[0]);
-        } catch (NumberFormatException ex){
+        } catch (NumberFormatException ex) {
             System.out.println("The port number could not be parsed. please input a valid integer between 1 and 65535");
             print_usage();
             return;
         }
 
-        if(port > 65535){
+        if (port > 65535) {
             System.out.println("The port is above the range, please input a port between 1 and 65535");
             return;
-        } else if(port < 1){
+        } else if (port < 1) {
             System.out.println("The port is below the range, please input a port between 1 and 65535");
         }
 
         ServerSocketChannel listening_port;
 
-        try{
+        try {
             listening_port = ServerSocketChannel.open();
         } catch (IOException ex) {
             System.out.println("IOError: " + ex);
             return;
         }
 
-        try{
+        try {
             listening_port.socket().bind(new InetSocketAddress(port));
         } catch (IOException ex) {
             System.out.println("IOError: " + ex);
             return;
         }
 
-        while(true){
+        while (true) {
             SocketChannel ServeSocket;
-            try{ //creates the client specific logical connection
+            try { // creates the client specific logical connection
                 ServeSocket = listening_port.accept();
+                // Processing = true; not needed because of single threading (was a blocking
+                // call)
             } catch (IOException ex) {
                 System.out.println("IOError: " + ex);
                 return;
             }
 
+            /*
+             * not needed because of single threading (was a blocking call)
+             * while(!Processing){
+             * //wait and block the processing to prevent corruption
+             * }
+             */
 
-            ByteBuffer buffer = ByteBuffer.allocate(MAX_CLIENT_MESSAGE_LENGTH); //makes a buffer of the maximum cliemt length
+            ByteBuffer buffer = ByteBuffer.allocate(MAX_CLIENT_MESSAGE_LENGTH); // makes a buffer of the maximum cliemt
+                                                                                // length
 
-            try{ //read the data from TCP stream
+            try { // read the data from TCP stream
                 ServeSocket.read(buffer);
-            } catch (IOException ex){
+            } catch (IOException ex) {
                 System.out.println("IOError: " + ex);
                 return;
             }
 
             buffer.flip();
 
-            char command = (char)buffer.get();
+            char command = (char) buffer.get();
 
             String humanReadableCommand = "";
 
-            switch(command){
+            switch (command) {
                 case 'D':
                     humanReadableCommand = "Download";
                     break;
@@ -119,15 +134,15 @@ public class server{
 
             buffer = ByteBuffer.allocate(MAX_CLIENT_MESSAGE_LENGTH);
 
-            try{
+            try {
                 ServeSocket.read(buffer);
-            } catch (IOException ex){
+            } catch (IOException ex) {
                 System.out.println("IOError: " + ex);
                 return;
             }
 
             buffer.flip();
-            
+
             try {
                 ServeSocket.close();
             } catch (IOException e1) {
@@ -135,9 +150,11 @@ public class server{
                 e1.printStackTrace();
             }
 
-            //creates new socket and listens for data
-            try{
+            // creates new socket and listens for data
+            try {
                 ServeSocket = listening_port.accept();
+                // Processing = true; not needed because of single threading (was a blocking
+                // call)
             } catch (IOException ex) {
                 System.out.println("IOError: " + ex);
                 return;
@@ -145,15 +162,27 @@ public class server{
 
             ByteBuffer payload = buffer;
 
-            try{ //read the data from TCP stream
+            try { // read the data from TCP stream
                 ServeSocket.read(buffer);
-            } catch (IOException ex){
+            } catch (IOException ex) {
                 System.out.println("IOError: " + ex);
                 return;
             }
 
-            switch(command){
+            switch (command) {
                 case 'D':
+                    try {
+                        checkFileAvailability(payload, ServeSocket);
+                    } catch (BadPermissionsException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IncorrectFileNameException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (IsDirectoryException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                     break;
                 case 'U':
                     break;
@@ -169,22 +198,21 @@ public class server{
                     break;
             }
 
-
-            try{
+            try {
                 ServeSocket.write(buffer);
                 ServeSocket.close();
 
-            }catch (IOException ex){
+            } catch (IOException ex) {
                 System.out.println("IOError: " + ex);
                 return;
             }
-            if(humanReadableCommand == "Unknown"){
+            if (humanReadableCommand == "Unknown") {
                 throwError(ServeSocket, "Command not valid");
             }
         }
     }
 
-    private static void throwError(SocketChannel sendSocket, String error){
+    private static void throwError(SocketChannel sendSocket, String error) {
         ByteBuffer messageBuffer = ByteBuffer.allocate(error.length());
         byte[] errorAsBytes = new byte[error.length() + 1];
         errorAsBytes[0] = (byte) 'E';
@@ -200,5 +228,41 @@ public class server{
         }
     }
 
+    private static File checkFileAvailability(ByteBuffer name, SocketChannel sendSocket)
+            throws BadPermissionsException, IncorrectFileNameException, IsDirectoryException {
+        File file = new File("data/" + name);
+        if (!file.exists()) {
+            throwError(sendSocket, "file does not exist");
+            throw new server.IncorrectFileNameException("This file does not exist in the server data directory");
+        }
+        if (file.isDirectory()) {
+            throwError(sendSocket, "file is a directory");
+            throw new server.IsDirectoryException("The file specified is a directory");
+        }
+        if (file.canRead()) {
+            return file;
+        } else {
+            throwError(sendSocket, "file is not readable");
+            throw new server.BadPermissionsException("this file is not readable");
+        }
+    }
+
+    public static class BadPermissionsException extends Exception {
+        public BadPermissionsException(String errorMessage) {
+            super(errorMessage);
+        }
+    }
+
+    public static class IncorrectFileNameException extends Exception {
+        public IncorrectFileNameException(String errorMessage) {
+            super(errorMessage);
+        }
+    }
+
+    public static class IsDirectoryException extends Exception {
+        public IsDirectoryException(String errorMessage) {
+            super(errorMessage);
+        }
+    }
 
 }
