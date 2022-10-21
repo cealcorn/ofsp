@@ -174,14 +174,14 @@ public class server {
                     try {
                         checkFileAvailability(payload, ServeSocket);
                     } catch (BadPermissionsException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        System.out.println("Error from client download command: " + e.getMessage());
+                        break;
                     } catch (IncorrectFileNameException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        System.out.println("Error from client download command: " + e.getMessage());
+                        break;
                     } catch (IsDirectoryException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
+                        System.out.println("Error from client download command: " + e.getMessage());
+                        break;
                     }
                     break;
                 case 'U':
