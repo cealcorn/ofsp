@@ -6,7 +6,6 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
-
 public class server{
     private static final int MAX_CLIENT_MESSAGE_LENGTH = 2048;
 
@@ -107,12 +106,15 @@ public class server{
 
             System.out.println("Command recieved from client: " + humanReadableCommand);
             buffer.rewind();
-            char confirmChar = humanReadableCommand != "Unknown" ? 'C' : 'E';
-            try {
-                ServeSocket.write(ByteBuffer.allocate(1).put(0, (byte) confirmChar));
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+            if (humanReadableCommand != "Unknown") {
+                try {
+                    ServeSocket.write(ByteBuffer.allocate(1).put(0, (byte) 'C'));
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else {
+                throwError(ServeSocket, "Unknown command: " + command);
             }
 
             buffer = ByteBuffer.allocate(MAX_CLIENT_MESSAGE_LENGTH);
@@ -184,8 +186,9 @@ public class server{
 
     private static void throwError(SocketChannel sendSocket, String error){
         ByteBuffer messageBuffer = ByteBuffer.allocate(error.length());
-        byte[] errorAsBytes = new byte[error.length()];
-        for (int i=0; i<error.length();i++){
+        byte[] errorAsBytes = new byte[error.length() + 1];
+        errorAsBytes[0] = (byte) 'E';
+        for (int i = 1; i <= error.length(); i++) {
             errorAsBytes[i] = (byte) error.charAt(i);
         }
         messageBuffer.put(errorAsBytes, 0, error.length());
