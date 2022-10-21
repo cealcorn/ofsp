@@ -247,19 +247,19 @@ public class server {
         }
     }
 
-    public static class BadPermissionsException extends Exception {
+    private static class BadPermissionsException extends Exception {
         public BadPermissionsException(String errorMessage) {
             super(errorMessage);
         }
     }
 
-    public static class IncorrectFileNameException extends Exception {
+    private static class IncorrectFileNameException extends Exception {
         public IncorrectFileNameException(String errorMessage) {
             super(errorMessage);
         }
     }
 
-    public static class IsDirectoryException extends Exception {
+    private static class IsDirectoryException extends Exception {
         public IsDirectoryException(String errorMessage) {
             super(errorMessage);
         }
