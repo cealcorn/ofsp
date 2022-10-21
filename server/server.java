@@ -6,8 +6,13 @@ import java.nio.ByteBuffer;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
 
+
 public class server{
-    server(){}
+    private static final int MAX_CLIENT_MESSAGE_LENGTH = 2048;
+
+
+    server(){
+    }
 
     private static void print_usage(){
         System.out.println("USAGE: java ServerTCP.java listening_port");
@@ -60,7 +65,8 @@ public class server{
                 return;
             }
 
-            ByteBuffer buffer = ByteBuffer.allocate(1); //makes a buffer of 1 byte (only one character accepted)
+
+            ByteBuffer buffer = ByteBuffer.allocate(MAX_CLIENT_MESSAGE_LENGTH); //makes a buffer of the maximum cliemt length
 
             try{ //read the data from TCP stream
                 ServeSocket.read(buffer);
@@ -70,16 +76,126 @@ public class server{
             }
 
             buffer.flip();
-            System.out.println("Message from Client: " + (char) buffer.get());
 
+            char command = (char)buffer.get();
+
+            String humanReadableCommand = "";
+
+            switch(command){
+                case 'D':
+                    humanReadableCommand = "Download";
+                    break;
+                case 'U':
+                    humanReadableCommand = "Upload";
+                    break;
+                case 'L':
+                    humanReadableCommand = "List";
+                    break;
+                case 'R':
+                    humanReadableCommand = "Rename";
+                    break;
+                case 'M':
+                    humanReadableCommand = "Move";
+                    break;
+                case 'H':
+                    humanReadableCommand = "Help";
+                    break;
+                default:
+                    humanReadableCommand = "Unknown";
+                    break;
+            }
+
+            System.out.println("Command recieved from client: " + humanReadableCommand);
             buffer.rewind();
+            char confirmChar = humanReadableCommand != "Unknown" ? 'C' : 'E';
+            try {
+                ServeSocket.write(ByteBuffer.allocate(1).put(0, (byte) confirmChar));
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+
+            buffer = ByteBuffer.allocate(MAX_CLIENT_MESSAGE_LENGTH);
+
+            try{
+                ServeSocket.read(buffer);
+            } catch (IOException ex){
+                System.out.println("IOError: " + ex);
+                return;
+            }
+
+            buffer.flip();
+            
+            try {
+                ServeSocket.close();
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+            }
+
+            //creates new socket and listens for data
+            try{
+                ServeSocket = listening_port.accept();
+            } catch (IOException ex) {
+                System.out.println("IOError: " + ex);
+                return;
+            }
+
+            ByteBuffer payload = buffer;
+
+            try{ //read the data from TCP stream
+                ServeSocket.read(buffer);
+            } catch (IOException ex){
+                System.out.println("IOError: " + ex);
+                return;
+            }
+
+            switch(command){
+                case 'D':
+                    break;
+                case 'U':
+                    break;
+                case 'L':
+                    break;
+                case 'R':
+                    break;
+                case 'M':
+                    break;
+                case 'H':
+                    break;
+                default:
+                    break;
+            }
+
+
             try{
                 ServeSocket.write(buffer);
                 ServeSocket.close();
+
             }catch (IOException ex){
                 System.out.println("IOError: " + ex);
                 return;
             }
+            if(humanReadableCommand == "Unknown"){
+                throwError(ServeSocket, "Command not valid");
+            }
         }
     }
+
+    private static void throwError(SocketChannel sendSocket, String error){
+        ByteBuffer messageBuffer = ByteBuffer.allocate(error.length());
+        byte[] errorAsBytes = new byte[error.length()];
+        for (int i=0; i<error.length();i++){
+            errorAsBytes[i] = (byte) error.charAt(i);
+        }
+        messageBuffer.put(errorAsBytes, 0, error.length());
+        try {
+            sendSocket.write(messageBuffer);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
+
 }
