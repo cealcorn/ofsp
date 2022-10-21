@@ -171,8 +171,9 @@ public class server {
 
             switch (command) {
                 case 'D':
+                    File downloadFile;
                     try {
-                        checkFileAvailability(payload, ServeSocket);
+                        downloadFile = checkFileAvailability(payload, ServeSocket);
                     } catch (BadPermissionsException e) {
                         System.out.println("Error from client download command: " + e.getMessage());
                         break;
@@ -183,6 +184,7 @@ public class server {
                         System.out.println("Error from client download command: " + e.getMessage());
                         break;
                     }
+                    sendFile(downloadFile, ServeSocket);
                     break;
                 case 'U':
                     break;
@@ -244,6 +246,17 @@ public class server {
         } else {
             throwError(sendSocket, "file is not readable");
             throw new server.BadPermissionsException("this file is not readable");
+        }
+    }
+
+    private static void sendFile(File file, SocketChannel sendSocket){
+        String sendingFile = file.toString();
+        ByteBuffer sendingBuffer = ByteBuffer.wrap(sendingFile.getBytes());
+        try {
+            sendSocket.write(sendingBuffer);
+        } catch (IOException e) {
+            throwError(sendSocket, "Error happened on server end. If continued, please message server admin.");
+            System.out.println("Error sending file: IO ERROR: " + e.getMessage());
         }
     }
 
