@@ -96,6 +96,7 @@ public class server {
 
             String humanReadableCommand = "";
 
+            // figures out what command the user wants and verifies if server can do it
             switch (command) {
                 case 'D':
                     humanReadableCommand = "Download";
@@ -199,6 +200,7 @@ public class server {
         }
     }
 
+    // sends the error message over the TCP socket
     private static void throwError(SocketChannel sendSocket, String error) {
         ByteBuffer messageBuffer = ByteBuffer.allocate(error.length());
         byte[] errorAsBytes = new byte[error.length() + 1];
@@ -215,7 +217,7 @@ public class server {
         }
     }
 
-    //verifies that the file is a file and the server (aka user) has suffiecient permissions to read it
+    // verifies that the file is a file and the server (aka user) has suffiecient permissions to read it
     private static File checkFileAvailability(ByteBuffer name, SocketChannel sendSocket)
             throws BadPermissionsException, IncorrectFileNameException, IsDirectoryException {
         File file = new File("data/" + name);
