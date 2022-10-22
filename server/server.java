@@ -143,7 +143,7 @@ public class server {
             }
 
             buffer.flip();
-            
+
             ByteBuffer payload = buffer;
 
             try { // read the data from TCP stream
@@ -215,6 +215,7 @@ public class server {
         }
     }
 
+    //verifies that the file is a file and the server (aka user) has suffiecient permissions to read it
     private static File checkFileAvailability(ByteBuffer name, SocketChannel sendSocket)
             throws BadPermissionsException, IncorrectFileNameException, IsDirectoryException {
         File file = new File("data/" + name);
@@ -229,7 +230,7 @@ public class server {
         if (file.canRead()) {
             return file;
         } else {
-            throwError(sendSocket, "file is not readable");
+            throwError(sendSocket, "Server error occured, contact server admin if this keeps occuring; CODE: READ DENIED");
             throw new server.BadPermissionsException("this file is not readable");
         }
     }
@@ -241,7 +242,7 @@ public class server {
         try {
             sendSocket.write(sendingBuffer);
         } catch (IOException e) {
-            throwError(sendSocket, "Error happened on server end. If continued, please message server admin.");
+            throwError(sendSocket, "Server error occured, contact server admin if this keeps occuring; CODE: FILE UPLOAD IO ERROR");
             System.out.println("Error sending file: IO ERROR: " + e.getMessage());
         }
     }
