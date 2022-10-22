@@ -9,6 +9,7 @@ import java.nio.channels.SocketChannel;
 
 public class server {
     private static final int MAX_CLIENT_MESSAGE_LENGTH = 2048;
+    private static final int MAX_CLIENT_FILE_PAYLOAD_SIZE = 1048576; //allow a 1MB file (includes the file metadata/path/name)
 
     server thisServer;
 
@@ -132,7 +133,7 @@ public class server {
                 throwError(ServeSocket, "Unknown command: " + command);
             }
 
-            buffer = ByteBuffer.allocate(MAX_CLIENT_MESSAGE_LENGTH);
+            buffer = ByteBuffer.allocate(MAX_CLIENT_FILE_PAYLOAD_SIZE);
 
             try {
                 ServeSocket.read(buffer);
@@ -142,24 +143,7 @@ public class server {
             }
 
             buffer.flip();
-
-            try {
-                ServeSocket.close();
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                e1.printStackTrace();
-            }
-
-            // creates new socket and listens for data
-            try {
-                ServeSocket = listening_port.accept();
-                // Processing = true; not needed because of single threading (was a blocking
-                // call)
-            } catch (IOException ex) {
-                System.out.println("IOError: " + ex);
-                return;
-            }
-
+            
             ByteBuffer payload = buffer;
 
             try { // read the data from TCP stream
@@ -169,6 +153,7 @@ public class server {
                 return;
             }
 
+            // switch payload to respective command handlers
             switch (command) {
                 case 'D':
                     File downloadFile;
@@ -250,7 +235,8 @@ public class server {
     }
 
     private static void sendFile(File file, SocketChannel sendSocket){
-        String sendingFile = file.toString();
+        //added 'C' to ensure that first character is known and we done accidentally send a file as an error
+        String sendingFile = "C" + file.toString();
         ByteBuffer sendingBuffer = ByteBuffer.wrap(sendingFile.getBytes());
         try {
             sendSocket.write(sendingBuffer);
