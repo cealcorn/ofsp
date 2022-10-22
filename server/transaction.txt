@@ -1,0 +1,16 @@
+Download file:
+    Client sends "D"
+    Server replies with "C" when ready
+        - Server replies with "E" and the error message directly after if error; EX: ECommand Not Found
+    Client sends file name EX: [path]/text.txt
+    Server Replies with "C" and contents of file if Found
+        - Server replies with "E" and the error message directly after if error; EX: EFile Not Found
+
+Upload file:
+    Client sends "U"
+    Server replies with "C" when ready
+        - Server replies with "E" and the error message directly after if error; EX: ECommand Not Found
+    Client sends file with null character (0x00) seperating file name and file data
+        - reasoning behind this is because 0x00 cannot be reasonably typed by a user, and why would someone put that into a filename/path?
+    Server replies with "C" if successful
+        - Server replies with "E" and the error message directly after if error; EX: EWrite not permitted, insufficient permissions
