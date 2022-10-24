@@ -11,6 +11,7 @@ public class client {
     // TO DO: implement the client part that will work with the server part and DOWNLOAD a file from the server
     //          implement the delete command
     //          follow server.java to write the code for this .java
+    // 8080
 
     public static void main(String[] args) throws IOException {
 
@@ -30,23 +31,56 @@ public class client {
             Scanner keyboard = new Scanner(System.in);
             System.out.println(
                     "Enter a command:\n" +
-                            "Upload - U\n" +
-                            "Download - D\n" +
-                            "List - L\n" +
-                            "Rename - R\n" +
-                            "Move - M\n" +
-                            "Help - H\n" +
-                            "Quit - Q\n"
+                            "U - Upload\n" +
+                            "D - Download\n" +
+                            "L - List\n" +
+                            "R - Rename\n" +
+                            "M - Move\n" +
+                            "H - Help\n" +
+                            "Q - Quit\n"
             );
             command = keyboard.nextLine().toUpperCase().charAt(0);
 
             switch (command) {
                 // CASE 'U' upload
+                case 'U':
+                    System.out.println(
+                            "Enter path of the file to upload: "
+                    );
+                    String filePath = keyboard.nextLine();
+                    ByteBuffer buffer = ByteBuffer.wrap(("U" + filePath).getBytes());
+                    SocketChannel channel = SocketChannel.open();
+                    channel.connect(new InetSocketAddress(serverIP, serverPort));
+                    channel.write(buffer);
+
+                    if (getServerCode(channel) != 'C') { // replaced F from canvas code
+                        System.out.println(
+                                "Server failed to serve the request."
+                        );
+                        System.out.println(
+                                "Error type: " + getServerCode(chanel).substring(1)
+                        );
+                    } else {
+                        System.out.println(
+                                "The request was accepted."
+                        );
+
+                        try (Socket socket = new Socket("localhost", 8080)) { // local host?
+                            dataInputStream = new DataInputStream(socket.getInputStream());
+                            dataOutputStream = new DataOutputStream(socket.getOutputStream());
+
+                            sendFile(filePath);
+
+                            dataInputStream.close();
+                        } catch (Exception e){
+                            e.printStackTrace();
+                        }
+                    }
 
                 // CASE 'D' download
                 case 'D':
                     System.out.println(
-                            "Enter name of the file to donwload: "
+                            "Enter name of the file to download: "
                     );
                     String fileName = keyboard.nextLine();
                     ByteBuffer buffer = ByteBuffer.wrap(("G" + fileName).getBytes());
@@ -113,5 +147,19 @@ public class client {
         //System.out.println(serverReplyCode);
 
         return serverReplyCode;
+    }
+
+    private static void sendFile(String path) throws Exception {
+        int bytes = 0;
+        File file = new File(path);
+        FileInputStream fileInputStream = new FileInputStream(file);
+
+        dataOutputStream.writeLong(file.length());
+        byte[] buffer = new byte[4*1024];
+        while ((bytes=fileInputStream.read(buffer)) != -1) {
+            dataOutputStream.write(buffer, 0, bytes);
+            dataOutputStream.flush();
+        }
+        fileInputStream.close();
     }
 }
