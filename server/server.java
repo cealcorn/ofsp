@@ -175,14 +175,19 @@ public class server {
                     sendFile(downloadFile, ServeSocket);
                     break;
                 case 'U':
+                    throwError(ServeSocket, "Command not implemented");
                     break;
                 case 'L':
+                    throwError(ServeSocket, "Command not implemented");
                     break;
                 case 'R':
+                    throwError(ServeSocket, "Command not implemented");
                     break;
                 case 'M':
+                    throwError(ServeSocket, "Command not implemented");
                     break;
                 case 'H':
+                    throwError(ServeSocket, "Command not implemented");
                     break;
                 case 'T':
                     throwError(ServeSocket, "Command not implemented");
@@ -224,7 +229,7 @@ public class server {
         File file = new File("data/" + name);
         if (!file.exists()) {
             throwError(sendSocket, "file does not exist");
-            throw new server.IncorrectFileNameException("This file does not exist in the server data directory");
+            throw new server.IncorrectFileNameException("This file [" + name.toString() +  "] does not exist in the server data directory");
         }
         if (file.isDirectory()) {
             throwError(sendSocket, "file is a directory");
