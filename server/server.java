@@ -80,8 +80,7 @@ public class server {
              * }
              */
 
-            ByteBuffer buffer = ByteBuffer.allocate(MAX_CLIENT_MESSAGE_LENGTH); // makes a buffer of the maximum cliemt
-                                                                                // length
+            ByteBuffer buffer = ByteBuffer.allocate(1); // makes a buffer of the command length
 
             try { // read the data from TCP stream
                 ServeSocket.read(buffer);
@@ -187,15 +186,9 @@ public class server {
             }
 
             try {
-                ServeSocket.write(buffer);
                 ServeSocket.close();
-
-            } catch (IOException ex) {
-                System.out.println("IOError: " + ex);
-                return;
-            }
-            if (humanReadableCommand == "Unknown") {
-                throwError(ServeSocket, "Command not valid");
+            } catch (IOException e) {
+                System.out.println("Unable to close socket. Error: " + e.getMessage());
             }
         }
     }
