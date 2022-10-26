@@ -115,6 +115,9 @@ public class server {
                 case 'H':
                     humanReadableCommand = "Help";
                     break;
+                case 'T':
+                    humanReadableCommand = "Delete";
+                    break;
                 default:
                     humanReadableCommand = "Unknown";
                     break;
@@ -181,9 +184,14 @@ public class server {
                     break;
                 case 'H':
                     break;
+                case 'T':
+                    throwError(ServeSocket, "Command not implemented");
+                    break;
                 default:
+                    throwError(ServeSocket, "Command not valid. Closing connection");
                     break;
             }
+
 
             try {
                 ServeSocket.close();

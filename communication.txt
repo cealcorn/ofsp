@@ -4,6 +4,7 @@ Upload - U
 Download - D
 List - L
 Rename - R
+Delete - T
 Move - M
 Help - H
 
