@@ -69,7 +69,7 @@ public class client {
                                     "Enter path of the file to upload: "
                             );
                             String filePath = keyboard.nextLine();          // Client sends file with null character ..
-                            ByteBuffer buffer = ByteBuffer.wrap(("U" + "0x00" + filePath).getBytes());
+                            ByteBuffer buffer = ByteBuffer.wrap((filePath + "0x00").getBytes()); // fileName
                             channel.write(buffer);                          // seperating file name and file data
                         } catch (Exception e) {
                             e.printStackTrace();
