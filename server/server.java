@@ -212,7 +212,7 @@ public class server {
         byte[] errorAsBytes = new byte[error.length() + 1];
         errorAsBytes[0] = (byte) 'E';
         for (int i = 1; i <= error.length(); i++) {
-            errorAsBytes[i] = (byte) error.charAt(i);
+            errorAsBytes[i] = (byte) error.charAt(i-1);
         }
         messageBuffer.put(errorAsBytes, 0, error.length());
         try {
