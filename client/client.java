@@ -102,7 +102,7 @@ public class client {
                     channel.shutdownOutput();
 
                     // receive server reply code
-                    if (getServerCode(channel) != 'C') { // replaced F from canvas code
+                    if (getServerCode(channel) != 'E') { // replaced F from canvas code
                         System.out.println(
                                 "Server failed to serve the request."
                         );
