@@ -226,7 +226,7 @@ public class server {
     // verifies that the file is a file and the server (aka user) has suffiecient permissions to read it
     private static File checkFileAvailability(ByteBuffer name, SocketChannel sendSocket)
             throws BadPermissionsException, IncorrectFileNameException, IsDirectoryException {
-        File file = new File("data/" + name);
+        File file = new File("data/" + name.toString());
         if (!file.exists()) {
             throwError(sendSocket, "file does not exist");
             throw new server.IncorrectFileNameException("This file [" + name.toString() +  "] does not exist in the server data directory");
