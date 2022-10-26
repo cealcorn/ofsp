@@ -16,6 +16,8 @@ import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class client {
+    private static DataInputStream dataInputStream;
+    private static DataOutputStream dataOutputStream;
 
     // TO DO: implement the client part that will work with the server part and DOWNLOAD a file from the server
     //          implement the delete command
@@ -50,6 +52,9 @@ public class client {
             );
             command = keyboard.nextLine().toUpperCase().charAt(0);
 
+            ByteBuffer buffer;
+            SocketChannel channel = SocketChannel.open();
+            channel.connect(new InetSocketAddress(serverIP, serverPort));
             switch (command) {
                 // CASE 'U' upload
                 case 'U':
@@ -57,9 +62,7 @@ public class client {
                             "Enter path of the file to upload: "
                     );
                     String filePath = keyboard.nextLine();
-                    ByteBuffer buffer = ByteBuffer.wrap(("U" + filePath).getBytes());
-                    SocketChannel channel = SocketChannel.open();
-                    channel.connect(new InetSocketAddress(serverIP, serverPort));
+                    buffer = ByteBuffer.wrap(("U" + filePath).getBytes());
                     channel.write(buffer);
 
                     if (getServerCode(channel) != 'C') { // replaced F from canvas code
@@ -73,7 +76,6 @@ public class client {
                         System.out.println(
                                 "The request was accepted."
                         );
-
                         try (Socket socket = new Socket("localhost", 8080)) { // local host?
                             dataInputStream = new DataInputStream(socket.getInputStream());
                             dataOutputStream = new DataOutputStream(socket.getOutputStream());
@@ -92,9 +94,7 @@ public class client {
                             "Enter name of the file to download: "
                     );
                     String fileName = keyboard.nextLine();
-                    ByteBuffer buffer = ByteBuffer.wrap(("G" + fileName).getBytes());
-                    SocketChannel channel = SocketChannel.open();
-                    channel.connect(new InetSocketAddress(serverIP, serverPort));
+                    buffer = ByteBuffer.wrap(("D" + fileName).getBytes());
                     channel.write(buffer);
 
                     // shut down output on client side after client is done sending to server
