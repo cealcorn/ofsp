@@ -69,8 +69,9 @@ public class client {
                         System.out.println(
                                 "Server failed to serve the request."
                         );
+                        //TODO: fix this code to extract string from server for error message
                         System.out.println(
-                                "Error type: " + getServerCode(chanel).substring(1)
+                                "Error type: " + getServerCode(channel)
                         );
                     } else {
                         System.out.println(
