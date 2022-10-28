@@ -2,6 +2,8 @@ package server;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -16,6 +18,7 @@ public class server2 {
     private static Socket clientSocket;
     private static BufferedReader in;
     private static PrintWriter out;
+    private static String directorySeperator;
 
     server2 thisServer;
 
@@ -70,9 +73,15 @@ public class server2 {
             System.out.println("Unable to bind to port " + String.valueOf(port) + ". Error: " + e.getMessage());
             return;
         }
+
+        //get the seperator here because if you dont have server conection, this is pointless (you also only need to do this once)
+        getDirectorySeperator();
+
         while (true) { //keeps server connection open and accepts multiple clients
             try {
                 clientSocket = serveSocket.accept();
+                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                out = new PrintWriter(clientSocket.getOutputStream(), true);
             } catch (IOException e) {
                 System.out.println("Unable to create client connection");
                 return;
@@ -81,11 +90,6 @@ public class server2 {
             // adds ability to switch to different parts of the code
             boolean recievedCommand = false;
             boolean recievedPayload = false;
-            try {
-                in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-            } catch (IOException e) {
-                System.out.println("could not create the buffer");
-            }
 
             String currentInput;
             String humanReadableCommand;
@@ -131,6 +135,8 @@ public class server2 {
                         if (humanReadableCommand == "Unknown") {
                             recievedCommand = false;
                             throwError("Unknown Command. Please retry");
+                        } else {
+                            out.println("C");
                         }
                         continue; // go wait for the next line to come in
                     } else if (!recievedPayload) {
@@ -200,9 +206,23 @@ public class server2 {
     }
 
     private static void sendFile(File file) throws EmptyFileException {
-        String outputBuffer = file.toString();
-        if (!outputBuffer.isEmpty()) {
-            out.println("C" + outputBuffer);
+        if (file.length() != 0) {
+            char[] charBuffer = new char[(int) file.length()];
+            FileReader fileReader;
+            try {
+                fileReader = new FileReader(file.toString());
+                fileReader.read(charBuffer);
+                fileReader.close();
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+            String fileString = "";
+            for(int i=0;i<file.length();i++){
+                fileString += charBuffer[i];
+            }
+            out.println("C" + fileString);
         } else {
             throw new server2.EmptyFileException("File is empty");
         }
@@ -213,9 +233,9 @@ public class server2 {
     // permissions to read it
     private static File checkFileAvailability(String name)
             throws BadPermissionsException, IncorrectFileNameException, IsDirectoryException {
-        File file = new File("data/" + name);
+        File file = new File("data" + directorySeperator + name);
         if (!file.exists()) {
-            throwError("file does not exist");
+            throwError("file does not exist: " + file.getPath());
             throw new server2.IncorrectFileNameException(IncorrectFileNameException.BadFileName, name);
         }
         if (file.isDirectory()) {
@@ -227,6 +247,15 @@ public class server2 {
         } else {
             throwError("Server error occured, contact server admin if this keeps occuring; CODE: READ DENIED");
             throw new server2.BadPermissionsException(BadPermissionsException.BadRead);
+        }
+    }
+
+    private static void getDirectorySeperator(){
+        String operatingSystem = System.getProperty("os.name");
+        if(operatingSystem.contains("Windows")){
+            directorySeperator = "\\";
+        } else {
+            directorySeperator = "/";
         }
     }
 
