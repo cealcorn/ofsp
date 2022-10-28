@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -164,10 +165,36 @@ public class server2 {
                                 }
                                 break;
                             case 'U':
-                                humanReadableCommand = "Upload";
+                                payload = currentInput.substring(1);
+                                int indexOfNull = payload.indexOf("\0");
+                                String fileName = payload.substring(0,indexOfNull);
+                                //adding one because indexes start at 0 and indexOf starts at 0 as well
+                                String fileContents = payload.substring(indexOfNull+1);
+                                try {
+                                    checkFileAvailability(fileName, true);
+                                } catch (BadPermissionsException e) {
+                                    System.out.println("Error from client download command: " + e.getMessage());
+                                    break;
+                                } catch (IncorrectFileNameException e) {
+                                } catch (IsDirectoryException e) {
+                                    System.out.println("Error from client download command: " + e.getMessage());
+                                    break;
+                                }
+                                createFile(fileName, unSanitizeInput(fileContents));
                                 break;
                             case 'L':
-                                humanReadableCommand = "List";
+                                payload = currentInput.substring(1);
+                                File directory;
+                                try {
+                                    directory = checkFolderAvailability(payload);
+                                } catch (IsFileException e) {
+                                    System.out.println("Directory is shown as a file");
+                                    break;
+                                } catch (IncorrectDirectoryName e){
+                                    System.out.println("Directory name [data/" + payload + "] was not found");
+                                    break;
+                                }
+                                listDirectory(directory);
                                 break;
                             case 'R':
                                 humanReadableCommand = "Rename";
@@ -214,7 +241,7 @@ public class server2 {
                 fileReader.read(charBuffer);
                 fileReader.close();
             } catch (FileNotFoundException e) {
-                e.printStackTrace();
+                System.out.println("How did you not find this File reader? I already checked to see if you exist...");
             } catch (IOException e){
                 e.printStackTrace();
             }
@@ -233,7 +260,7 @@ public class server2 {
     // permissions to read it
     private static File checkFileAvailability(String name)
             throws BadPermissionsException, IncorrectFileNameException, IsDirectoryException {
-        File file = new File("data" + directorySeperator + name);
+        File file = new File("data" + directorySeperator + correctDirectorySeperator(name));
         if (!file.exists()) {
             throwError("file does not exist: " + file.getPath());
             throw new server2.IncorrectFileNameException(IncorrectFileNameException.BadFileName, name);
@@ -250,6 +277,25 @@ public class server2 {
         }
     }
 
+    private static File checkFileAvailability(String name, boolean upload)
+            throws BadPermissionsException, IncorrectFileNameException, IsDirectoryException {
+        File file = new File("data" + directorySeperator + name);
+        if (!file.exists()) {
+            throw new server2.IncorrectFileNameException(IncorrectFileNameException.BadFileName, name);
+        }
+        if (file.isDirectory()) {
+            throwError("file is a directory");
+            throw new server2.IsDirectoryException("The file specified is a directory");
+        }
+        if (file.canRead()) {
+            return file;
+        } else {
+            throwError("Server error occured, contact server admin if this keeps occuring; CODE: READ DENIED");
+            throw new server2.BadPermissionsException(BadPermissionsException.BadRead);
+        }
+    }
+
+    //this is here because the built in java method is broken :(
     private static void getDirectorySeperator(){
         String operatingSystem = System.getProperty("os.name");
         if(operatingSystem.contains("Windows")){
@@ -257,6 +303,63 @@ public class server2 {
         } else {
             directorySeperator = "/";
         }
+    }
+
+    private static String correctDirectorySeperator(String path){
+        if(path.contains(directorySeperator)){
+            return path;
+        } else {
+            if(directorySeperator == "/"){
+                return path.replace("\\", "/");
+            } else{
+                return path.replace("/", "\\");
+            }
+        }
+    }
+
+    private static void createFile(String fileName, String content){
+        FileWriter fileWriter;
+        try {
+            fileWriter = new FileWriter("data" + directorySeperator + fileName);
+            fileWriter.write(content);
+            fileWriter.close();
+        } catch (IOException e) {
+            throwError("Unable to upload file");
+            e.printStackTrace();
+        }
+        out.println("C");
+    }
+
+    private static File checkFolderAvailability(String path) throws IsFileException, IncorrectDirectoryName{
+        File directory = new File("data" + directorySeperator + correctDirectorySeperator(path));
+        if(directory.isFile()){
+            throwError("Directory is currently a file");
+            throw new server2.IsFileException("Directory is shown as a file");
+        }
+        if(directory.exists()){
+            return directory;
+        } else {
+            throwError("unknown directory: " + path);
+            throw new server2.IncorrectDirectoryName("Unknown Directory");
+        }
+    }
+
+    public static void listDirectory(File directory){
+        String[] listedDirectory = directory.list();
+        String list = "";
+        for(int i=0; i<listedDirectory.length; i++){
+            list += sanitizeInput(listedDirectory[i]);
+        }
+        out.println("C" + list);
+    }
+
+    //because new lines break the code, this is a sanitazation function th=o make sure that the code does not break
+    private static String sanitizeInput(String unsanitizedString){
+        return unsanitizedString.replaceAll("\n", "\0\\n");
+    }
+
+    private static String unSanitizeInput(String sanitizedInput){
+        return sanitizedInput.replaceAll("\0\\n", "\n");
     }
 
     private static class BadPermissionsException extends Exception {
@@ -275,6 +378,12 @@ public class server2 {
         }
 
         public IncorrectFileNameException(String errorMessage) {
+            super(errorMessage);
+        }
+    }
+
+    private static class IncorrectDirectoryName extends Exception{
+        public IncorrectDirectoryName(String errorMessage){
             super(errorMessage);
         }
     }
@@ -299,6 +408,12 @@ public class server2 {
 
     private static class InvalidArgumentLength extends Exception {
         public InvalidArgumentLength(String errorMessage) {
+            super(errorMessage);
+        }
+    }
+
+    private static class IsFileException extends Exception{
+        public IsFileException(String errorMessage){
             super(errorMessage);
         }
     }
