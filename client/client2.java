@@ -96,7 +96,8 @@ public class client2 {
 
                         Files.createDirectories(Paths.get("./downloaded"));
                         response2 = (in.readLine());
-                        createFile(fileName.substring(1), response2.substring(1));
+                        createFile(correctDirectorySeperator(fileName.substring(1)),
+                                response2.substring(1));
                         System.out.println("File created.");
                     }
 
@@ -196,6 +197,18 @@ public class client2 {
             directorySeperator = "\\";
         } else {
             directorySeperator = "/";
+        }
+    }
+
+    private static String correctDirectorySeperator(String path){
+        if(path.contains(directorySeperator)){
+            return path;
+        } else {
+            if(directorySeperator == "/"){
+                return path.replace("\\", "/");
+            } else{
+                return path.replace("/", "\\");
+            }
         }
     }
 
