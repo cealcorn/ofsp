@@ -394,7 +394,7 @@ public class server2 {
         String[] listedDirectory = directory.list();
         String list = "";
         for(int i=0; i<listedDirectory.length; i++){
-            list += sanitizeInput(listedDirectory[i]);
+            list += sanitizeInput(listedDirectory[i] + "\n");
         }
         out.println("C" + list);
     }
