@@ -117,7 +117,7 @@ public class client2 {
                         System.out.println("Enter the directory to list: ");
                         String desDirec = keyboard.nextLine();
 
-                        out.println("L" + desDirec); // L or no L?
+                        out.println("L" + desDirec);
 
                         response2 = (in.readLine());
 
@@ -125,7 +125,7 @@ public class client2 {
                             System.out.println("There was an error.");
                             System.out.println("ERROR: " + response2.substring(1));
                         } else {
-                            System.out.println(unSanitizeInput(in.readLine().substring(1)));
+                            System.out.println(unSanitizeInput(response2.substring(1)));
                         }
                     }
 
