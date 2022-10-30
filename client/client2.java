@@ -122,10 +122,10 @@ public class client2 {
                         response2 = (in.readLine());
 
                         if (response2.charAt(0) != 'C') {
-                            System.out.println(unSanitizeInput(in.readLine().substring(1)));
-                        } else {
                             System.out.println("There was an error.");
                             System.out.println("ERROR: " + response2.substring(1));
+                        } else {
+                            System.out.println(unSanitizeInput(in.readLine().substring(1)));
                         }
                     }
 
