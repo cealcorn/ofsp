@@ -96,7 +96,7 @@ public class client2 {
 
                         Files.createDirectories(Paths.get("./downloaded"));
                         response2 = (in.readLine());
-                        createFile(fileName, response2.substring(1));
+                        createFile(fileName.substring(1), response2.substring(1));
                         System.out.println("File created.");
                     }
 
