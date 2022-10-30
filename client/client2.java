@@ -45,10 +45,13 @@ public class client2 {
             in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
             out = new PrintWriter(clientSocket.getOutputStream(), true);
 
+            String response1;
+            String response2;
+
             switch (command) {
-                case 'U':                                                                                      // UPLOAD
+                case 'U':
                     out.println("U");
-                    String response1 = (in.readLine());
+                    response1 = (in.readLine());
 
                     if (response1.charAt(0) != 'C') {
                         System.out.println("Server failed to serve the request.");
@@ -59,9 +62,9 @@ public class client2 {
                         String filePath = keyboard.nextLine();
 
                         File file = new File("data\\" + filePath); // data\\ is base directory
-                        out.println("U" + "data\\" + filePath + "\0");
+                        out.println("U" + "data\\" + file + "\0");
 
-                        String response2 = (in.readLine());
+                        response2 = (in.readLine());
 
                         if (response2.charAt(0) != 'C') {
                             System.out.println("Server was unable to process upload.");
@@ -73,7 +76,7 @@ public class client2 {
                         break;
                     }
 
-                case 'D':                                                                                    // DOWNLOAD
+                case 'D':
                     out.println("D");
 
                     System.out.println("Enter the name of the file to download:");
@@ -81,11 +84,11 @@ public class client2 {
                     ByteBuffer buffer = ByteBuffer.wrap(("D" + fileName).getBytes());
                     out.write(String.valueOf(buffer));
 
-                    //clientSocket.shutdownOutput();
+                    response1 = (in.readLine());
 
-                    if (in.readLine().charAt(0) != 'C') {
+                    if (response1.charAt(0) != 'C') {
                         System.out.println("Server failed to serve the request.");
-                        System.out.println("ERROR: " + in.readLine());
+                        System.out.println("ERROR: " + response1.substring(1));
                     } else {
                         System.out.println("Download request was accepted.");
                         Files.createDirectories(Paths.get("./downloaded"));
@@ -109,25 +112,29 @@ public class client2 {
 
                     break;
 
-                case 'L':                                                                                        // LIST
+                case 'L':
                     out.println("L");
 
-                    if (in.readLine().charAt(0) != 'C') {
+                    response1 = (in.readLine());
+
+                    if (response1.charAt(0) != 'C') {
                         System.out.println("Server failed to serve the request.");
-                        System.out.println("ERROR: " + in.readLine());
+                        System.out.println("ERROR: " + response1.substring(1));
                     } else {
                         System.out.println("The request was accepted.");
-                        System.out.println(in.readLine());
+                        System.out.println(in.readLine().substring(1));
                     }
 
                     break;
 
-                case 'R':                                                                                      // RENAME
+                case 'R':
                     out.println("R");
 
-                    if (in.readLine().charAt(0) != 'C') {
+                    response1 = (in.readLine());
+
+                    if (response1.charAt(0) != 'C') {
                         System.out.println("Server failed to serve the request.");
-                        System.out.println("ERROR: " + in.readLine());
+                        System.out.println("ERROR: " + response1.substring(1));
                     } else {
                         System.out.println("The request was accepted.");
 
@@ -136,46 +143,58 @@ public class client2 {
                         System.out.println("Enter new name for " + currentFileName + ":");
                         String newFileName = keyboard.nextLine();
 
-                        String fileSend = currentFileName + "\0" + newFileName; // split string at ',' when received?
-                        out.write(fileSend);
+                        String fileSend = "R" + currentFileName + "\0" + newFileName;
+                        out.println(fileSend);
                     }
 
                     break;
 
-                case 'M':                                                                                        // MOVE
+                case 'M':
                     out.println("M");
 
-                    if (in.readLine().charAt(0) != 'C') {
+                    response1 = (in.readLine());
+
+                    if (response1.charAt(0) != 'C') {
                         System.out.println("Server failed to serve the request.");
-                        System.out.println("ERROR: " + in.readLine());
+                        System.out.println("ERROR: " + response1.substring(1));
                     } else {
                         System.out.println("Enter name of file to move:");
                         String fileToMove = keyboard.nextLine();
                         System.out.println("Enter new file location:");
                         String newFileLocation = keyboard.nextLine();
 
-                        String moveSend = fileToMove + "\0" + newFileLocation; // split string at ',' when received?
-                        out.write(moveSend);
+                        String moveSend = "M" + fileToMove + "\0" + newFileLocation;
+                        out.println(moveSend);
                     }
 
                     break;
 
-//                case 'T':                                                                                    // DELETE
-//                    clientSocket = new Socket("localhost", 8080);
-//                    in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-//                    out = new PrintWriter(clientSocket.getOutputStream(), true);
-//                    clientSocket.connect(new InetSocketAddress(serverIP, serverPort));
-//
-//                    break;
+                case 'T':
+                    out.println("T");
 
-                case 'H':                                                                                        // HELP
+                    response1 = (in.readLine());
+
+                    if (response1.charAt(0) != 'C') {
+                        System.out.println("Server failed to serve the request.");
+                        System.out.println("ERROR: " + response1.substring(1));
+                    } else {
+                        System.out.println("Enter the name of file to delete:");
+                        String fileToDel = keyboard.nextLine();
+
+                        fileToDel = "T" + fileToDel;
+                        out.println(fileToDel);
+                    }
+
+                    break;
+
+                case 'H':
                     out.println("H");
 
                     System.out.println("Contact a system administrator, or cope.");
                     break;
             }
 
-        } while (command != 'Q');                                                                        // END DO-WHILE
+        } while (command != 'Q');
 
         in.close();
         out.close();
