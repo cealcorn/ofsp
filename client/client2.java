@@ -1,12 +1,7 @@
 package client;
 
-import server.server2;
-
 import java.io.*;
 import java.net.*;
-import java.nio.ByteBuffer;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import java.util.Scanner;
 
 public class client2 {
@@ -65,8 +60,7 @@ public class client2 {
                         System.out.println("Enter path of the file to upload:");
                         String filePath = keyboard.nextLine();
 
-                        File file = new File("data\\" + filePath); // data\\ is base directory
-                        FileReader fr = new FileReader(file.toString());
+                        File file = new File("data" + directorySeperator + filePath);
                         out.println("U" + filePath + "\0" + sendFile(file));
 
                         response2 = (in.readLine());
