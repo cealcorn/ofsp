@@ -11,6 +11,7 @@ public class client2 {
     private static Socket clientSocket;
     private static PrintWriter out;
     private static BufferedReader in;
+    private static String directorySeperator;
 
     public static void main(String[] args) throws IOException {
 
@@ -22,6 +23,7 @@ public class client2 {
         int serverPort = Integer.parseInt(args[1]);
         String serverIP = args[0];
 
+        getDirectorySeperator();
         char command;
 
         do {                                                                                           // BEGIN DO-WHILE
@@ -79,11 +81,6 @@ public class client2 {
                 case 'D':
                     out.println("D");
 
-                    System.out.println("Enter the name of the file to download:");
-                    String fileName = keyboard.nextLine();
-                    ByteBuffer buffer = ByteBuffer.wrap(("D" + fileName).getBytes());
-                    out.write(String.valueOf(buffer));
-
                     response1 = (in.readLine());
 
                     if (response1.charAt(0) != 'C') {
@@ -91,23 +88,16 @@ public class client2 {
                         System.out.println("ERROR: " + response1.substring(1));
                     } else {
                         System.out.println("Download request was accepted.");
+                        System.out.println("Enter the name of the file to download:");
+                        String fileName = keyboard.nextLine();
+
+                        fileName = "D" + fileName;
+                        out.println(fileName);
+
                         Files.createDirectories(Paths.get("./downloaded"));
-
-                        BufferedWriter bw = new BufferedWriter(new FileWriter(
-                                "./downloaded/" + fileName, true));
-                        ByteBuffer data = ByteBuffer.allocate(1024);
-                        int bytesRead;
-
-                        while ((bytesRead = in.read()) != -1) {
-                            data.flip();
-                            byte[] a = new byte[bytesRead];
-                            data.get(a);
-                            String serverMessage = new String(a);
-                            bw.write(serverMessage);
-                            data.clear();
-                        }
-                        bw.close();
-
+                        response2 = (in.readLine());
+                        createFile(fileName, response2.substring(1));
+                        System.out.println("File created.");
                     }
 
                     break;
@@ -198,5 +188,25 @@ public class client2 {
 
         in.close();
         out.close();
+    }
+
+    private static void getDirectorySeperator(){
+        String operatingSystem = System.getProperty("os.name");
+        if(operatingSystem.contains("Windows")){
+            directorySeperator = "\\";
+        } else {
+            directorySeperator = "/";
+        }
+    }
+
+    private static void createFile(String fileName, String content){
+        FileWriter fileWriter;
+        try {
+            fileWriter = new FileWriter("data" + directorySeperator + fileName);
+            fileWriter.write(content);
+            fileWriter.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
