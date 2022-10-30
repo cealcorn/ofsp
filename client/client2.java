@@ -114,7 +114,19 @@ public class client2 {
                         System.out.println("ERROR: " + response1.substring(1));
                     } else {
                         System.out.println("The request was accepted.");
-                        System.out.println(in.readLine().substring(1));
+                        System.out.println("Enter the directory to list: ");
+                        String desDirec = keyboard.nextLine();
+
+                        out.println(desDirec);
+
+                        response2 = (in.readLine());
+
+                        if (response2.charAt(0) != 'C') {
+                            System.out.println(in.readLine().substring(1));
+                        } else {
+                            System.out.println("There was an error.");
+                            System.out.println("ERROR: " + response2.substring(1));
+                        }
                     }
 
                     break;
