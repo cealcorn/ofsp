@@ -26,7 +26,7 @@ public class client2 {
         getDirectorySeperator();
         char command;
 
-        do {                                                                                           // BEGIN DO-WHILE
+        do {
             Scanner keyboard = new Scanner(System.in);
             System.out.println(
                     """
@@ -185,10 +185,10 @@ public class client2 {
                     break;
             }
 
+            in.close();
+            out.close();
+            clientSocket.close();
         } while (command != 'Q');
-
-        in.close();
-        out.close();
     }
 
     private static void getDirectorySeperator(){
