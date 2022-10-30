@@ -94,11 +94,15 @@ public class client2 {
                         fileName = "D" + fileName;
                         out.println(fileName);
 
-                        Files.createDirectories(Paths.get("./downloaded"));
                         response2 = (in.readLine());
-                        createFile(correctDirectorySeperator(fileName.substring(1)),
-                                response2.substring(1));
-                        System.out.println("File created.");
+
+                        if (response2.charAt(0) != 'E') {
+                            createFile(correctDirectorySeperator(fileName.substring(1)),
+                                    response2.substring(1));
+                            System.out.println("File created.");
+                        } else {
+                            System.out.println("ERROR: " + response2.substring(1));
+                        }
                     }
 
                     break;
