@@ -136,6 +136,9 @@ public class server2 {
                         if (humanReadableCommand == "Unknown") {
                             recievedCommand = false;
                             throwError("Unknown Command. Please retry");
+                        } else if (humanReadableCommand == "Help"){
+                            throwError("No... that is for a therapist not me...");
+                            break;
                         } else {
                             out.println("C");
                         }
@@ -197,16 +200,56 @@ public class server2 {
                                 listDirectory(directory);
                                 break;
                             case 'R':
-                                humanReadableCommand = "Rename";
-                                break;
                             case 'M':
-                                humanReadableCommand = "Move";
+                                payload = currentInput.substring(1);
+                                int originalIndexOfNull = payload.indexOf("\0");
+                                String originalFileString = payload.substring(0,originalIndexOfNull);
+                                String newFile = payload.substring((originalIndexOfNull+1));
+                                File originalFile;
+                                try{
+                                    originalFile = checkFileAvailability(originalFileString);
+                                } catch (BadPermissionsException e) {
+                                    System.out.println("Error from client rename/delete command: " + e.getMessage());
+                                    break;
+                                } catch (IncorrectFileNameException e) {
+                                    System.out.println("Error from client rename/delete command: " + e.getMessage());
+                                    break;
+                                } catch (IsDirectoryException e) {
+                                    System.out.println("Error from client rename/delete command: " + e.getMessage());
+                                    break;
+                                }
+
+                                try {
+                                    moveFile(originalFile, newFile, true);
+                                } catch (BadPermissionsException e1) {
+                                    System.out.println("Could not rename/delete folder because of bad permissions");
+                                } catch (IsDirectoryException e1) {
+                                    System.out.println("Could not rename/delete folder because the requested file was a directory");
+                                }
                                 break;
                             case 'H':
                                 humanReadableCommand = "Help";
                                 break;
                             case 'T':
-                                humanReadableCommand = "Delete";
+                                payload = currentInput.substring(1);
+                                File deleteFile;
+                                try {
+                                    deleteFile = checkFileAvailability(payload);
+                                } catch (BadPermissionsException e) {
+                                    System.out.println("Error from client delete command: " + e.getMessage());
+                                    break;
+                                } catch (IncorrectFileNameException e) {
+                                    System.out.println("Error from client delete command: " + e.getMessage());
+                                    break;
+                                } catch (IsDirectoryException e) {
+                                    System.out.println("Error from client delete command: " + e.getMessage());
+                                    break;
+                                }
+                                try {
+                                    deleteFile(deleteFile);
+                                } catch (FileDeletionException e) {
+                                    System.out.println("Error from client delete command while deleting: " + e.getMessage());
+                                }
                                 break;
                             default:
                                 throwError(
@@ -281,6 +324,9 @@ public class server2 {
             throws BadPermissionsException, IncorrectFileNameException, IsDirectoryException {
         File file = new File("data" + directorySeperator + name);
         if (!file.exists()) {
+            if(!upload){
+                throwError("Invalid file name");
+            }
             throw new server2.IncorrectFileNameException(IncorrectFileNameException.BadFileName, name);
         }
         if (file.isDirectory()) {
@@ -344,13 +390,39 @@ public class server2 {
         }
     }
 
-    public static void listDirectory(File directory){
+    private static void listDirectory(File directory){
         String[] listedDirectory = directory.list();
         String list = "";
         for(int i=0; i<listedDirectory.length; i++){
             list += sanitizeInput(listedDirectory[i]);
         }
         out.println("C" + list);
+    }
+
+    private static void deleteFile(File file) throws FileDeletionException{
+        if(!file.delete()){
+            throw new server2.FileDeletionException("Unable to delete file");
+        }
+    }
+
+    private static void moveFile(File file, String destination, boolean rename) throws BadPermissionsException, IsDirectoryException{
+        String command;
+        if(rename){
+            command = "rename";
+        } else {
+            command = "move";
+        }
+        try {
+            checkFileAvailability(destination);
+        } catch (BadPermissionsException e) {
+            throwError("Unable to " + command + " file. Error: Permission Denied");
+            throw e;
+        } catch (IncorrectFileNameException e) {
+            file.renameTo(new File("data" + directorySeperator + destination));
+        } catch (IsDirectoryException e) {
+            throwError("Unable to " + command + " file. ");
+            throw e;
+        }
     }
 
     //because new lines break the code, this is a sanitazation function th=o make sure that the code does not break
@@ -418,4 +490,9 @@ public class server2 {
         }
     }
 
+    private static class FileDeletionException extends Exception {
+        public FileDeletionException(String errorMessage){
+            super(errorMessage);
+        }
+    }
 }
