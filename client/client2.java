@@ -1,5 +1,7 @@
 package client;
 
+import server.server2;
+
 import java.io.*;
 import java.net.*;
 import java.nio.ByteBuffer;
@@ -64,7 +66,8 @@ public class client2 {
                         String filePath = keyboard.nextLine();
 
                         File file = new File("data\\" + filePath); // data\\ is base directory
-                        out.println("U" + "data\\" + file + "\0");
+                        FileReader fr = new FileReader(file.toString());
+                        out.println("U" + filePath + "\0" + sendFile(file));
 
                         response2 = (in.readLine());
 
@@ -225,5 +228,35 @@ public class client2 {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private static String sendFile(File file) {
+        if (file.length() != 0) {
+            char[] charBuffer = new char[(int) file.length()];
+            FileReader fileReader;
+            try {
+                fileReader = new FileReader(file.toString());
+                fileReader.read(charBuffer);
+                fileReader.close();
+            } catch (FileNotFoundException e) {
+                System.out.println("File not found.");
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+            String fileString = "";
+            for (int i=0;i<file.length();i++) {
+                fileString += charBuffer[i];
+            }
+            return sanitizeInput(fileString);
+        }
+        return "";
+    }
+
+    private static String sanitizeInput(String unsanitizedString){
+        return unsanitizedString.replaceAll("\n", "\0\\n");
+    }
+
+    private static String unSanitizeInput(String sanitizedInput){
+        return sanitizedInput.replaceAll("\0\\n", "\n");
     }
 }
