@@ -394,8 +394,14 @@ public class server2 {
         String[] listedDirectory = directory.list();
         String list = "";
         for(int i=0; i<listedDirectory.length; i++){
-            list += sanitizeInput(listedDirectory[i] + "\n");
+            list += listedDirectory[i];
+            if(new File("data" + directorySeperator + listedDirectory[i]).isDirectory()){
+                list += "/\n";
+            } else {
+                list += "\n";
+            }
         }
+        list = sanitizeInput(list);
         out.println("C" + list);
     }
 
@@ -431,7 +437,7 @@ public class server2 {
     }
 
     private static String unSanitizeInput(String sanitizedInput){
-        return sanitizedInput.replaceAll("\0\\n", "\n");
+        return sanitizedInput.replaceAll("\0n", "\n");
     }
 
     private static class BadPermissionsException extends Exception {

@@ -263,6 +263,6 @@ public class client2 {
     }
 
     private static String unSanitizeInput(String sanitizedInput){
-        return sanitizedInput.replaceAll("\0\\n", "\n");
+        return sanitizedInput.replaceAll("\0n", "\n");
     }
 }
