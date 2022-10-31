@@ -3,9 +3,9 @@
 - a jdk works as well.
 - this has been tested on openJDK17
 ### Windows
-Use this tutorial: https://www.oracle.com/java/technologies/downloads/
+Use this link: https://www.oracle.com/java/technologies/downloads/
 ### Mac OS
-Use this tutorial: https://www.oracle.com/java/technologies/downloads/
+Use this link: https://www.oracle.com/java/technologies/downloads/
 ### Linux
 Debain-based systems:
 `sudo apt-get install openjdk17-jre`
