@@ -4,6 +4,8 @@ import java.io.*;
 import java.net.*;
 import java.util.Scanner;
 
+import javax.xml.catalog.Catalog;
+
 public class client2 {
     private static Socket clientSocket;
     private static PrintWriter out;
@@ -92,6 +94,15 @@ public class client2 {
                         out.println(fileName);
 
                         response2 = (in.readLine());
+                        // boolean cont = true;
+                        while(in.ready()){
+                            String currResp = in.readLine();
+                            if(currResp==null){
+                                // cont = false;
+                            } else{
+                                response2 += ("\n" + currResp);
+                            }
+                        }
 
                         if (response2.charAt(0) != 'E') {
                             createFile(correctDirectorySeperator(fileName.substring(1)),
