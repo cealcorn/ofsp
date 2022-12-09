@@ -2,11 +2,13 @@ package client;
 
 import java.io.*;
 import java.net.*;
+import java.nio.CharBuffer;
 import java.util.Scanner;
 
 import javax.xml.catalog.Catalog;
 
 public class client2 {
+    private static final int MAX_RECIEVE_FILE_SIZE = (int)Math.pow(2,30); // allows for a 1 GB file
     private static Socket clientSocket;
     private static PrintWriter out;
     private static BufferedReader in;
@@ -93,23 +95,32 @@ public class client2 {
                         fileName = "D" + fileName;
                         out.println(fileName);
 
-                        response2 = (in.readLine());
-                        // boolean cont = true;
-                        while(in.ready()){
-                            String currResp = in.readLine();
-                            if(currResp==null){
-                                // cont = false;
+                        String fileLengthString = "";
+                        int fileLength;
+                        boolean cont = true;
+                        while(cont){
+                            char currentReadChar = (char)in.read();
+                            if((currentReadChar == 'C') || (currentReadChar == 'E')){
+                                cont = false;
                             } else{
-                                response2 += ("\n" + currResp);
+                                fileLengthString += currentReadChar;
                             }
                         }
+                        fileLength = Integer.parseInt(fileLengthString);
 
-                        if (response2.charAt(0) != 'E') {
+                        char[] buffer;
+                        CharBuffer charBuffer = CharBuffer.allocate(fileLength);
+
+                        in.read(charBuffer);
+
+                        buffer = charBuffer.array();
+
+                        if (buffer[0] != 'E') {
                             createFile(correctDirectorySeperator(fileName.substring(1)),
-                                    response2.substring(1));
+                                    buffer);
                             System.out.println("File created.");
                         } else {
-                            System.out.println("ERROR: " + response2.substring(1));
+                            System.out.println("ERROR: " + new String(buffer).substring(1));
                         }
                     }
 
@@ -236,7 +247,7 @@ public class client2 {
         }
     }
 
-    private static void createFile(String fileName, String content){
+    private static void createFile(String fileName, char[] content){
         FileWriter fileWriter;
         try {
             fileWriter = new FileWriter("data" + directorySeperator + fileName);
