@@ -113,6 +113,7 @@ public class client2 {
 
                         in.read(charBuffer);
 
+                        charBuffer.limit(charBuffer.length());
                         buffer = charBuffer.array();
 
                         if (buffer[0] != 'E') {
