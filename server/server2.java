@@ -31,26 +31,31 @@ public class server2 {
         System.out.println("USAGE: java ServerTCP.java listening_port");
     }
 
+    // private static int verify_arguments(String[] args) throws InvalidPortNumber, InvalidArgumentLength {
+    //     if (args.length != 1) {
+    //         throw new server2.InvalidArgumentLength("Invalid number of arguments");
+    //     }
+
+    //     int port;
+    //     try {
+    //         port = Integer.parseInt(args[0]);
+    //     } catch (NumberFormatException ex) {
+    //         System.out.println("The port number could not be parsed. please input a valid integer between 1 and 65535");
+    //         throw new server2.InvalidPortNumber("Port not an integer");
+    //     }
+
+    //     if (port > 65535) {
+    //         System.out.println("The port is above the range, please input a port between 1 and 65535");
+    //         throw new server2.InvalidPortNumber("Port above range.");
+    //     } else if (port < 1) {
+    //         System.out.println("The port is below the range, please input a port between 1 and 65535");
+    //         throw new server2.InvalidPortNumber("Port below range.");
+    //     }
+    //     return port;
+    // }
+
     private static int verify_arguments(String[] args) throws InvalidPortNumber, InvalidArgumentLength {
-        if (args.length != 1) {
-            throw new server2.InvalidArgumentLength("Invalid number of arguments");
-        }
-
-        int port;
-        try {
-            port = Integer.parseInt(args[0]);
-        } catch (NumberFormatException ex) {
-            System.out.println("The port number could not be parsed. please input a valid integer between 1 and 65535");
-            throw new server2.InvalidPortNumber("Port not an integer");
-        }
-
-        if (port > 65535) {
-            System.out.println("The port is above the range, please input a port between 1 and 65535");
-            throw new server2.InvalidPortNumber("Port above range.");
-        } else if (port < 1) {
-            System.out.println("The port is below the range, please input a port between 1 and 65535");
-            throw new server2.InvalidPortNumber("Port below range.");
-        }
+        int port = 8080;
         return port;
     }
 
@@ -166,6 +171,7 @@ public class server2 {
                                     throwError("File is empty, nothing to send");
                                     System.out.println("File is Empty for [" + downloadFile.getName() + "].");
                                 }
+                                System.out.println("done");
                                 break;
                             case 'U':
                                 payload = currentInput.substring(1);
@@ -277,7 +283,8 @@ public class server2 {
 
     private static void sendFile(File file) throws EmptyFileException {
         if (file.length() != 0) {
-            char[] charBuffer = new char[(int) file.length()];
+            int fileSize = (int) file.length();
+            char[] charBuffer = new char[fileSize];
             FileReader fileReader;
             try {
                 fileReader = new FileReader(file.toString());
@@ -288,11 +295,16 @@ public class server2 {
             } catch (IOException e){
                 e.printStackTrace();
             }
-            String fileString = "";
-            for(int i=0;i<file.length();i++){
-                fileString += charBuffer[i];
-            }
-            out.println("C" + fileString);
+            // String fileString = new String(charBuffer);
+            // String fileString = "";
+            // for(int i=0;i<file.length();i++){
+            //     fileString += charBuffer[i];
+            // }
+            System.out.println("hello1");
+            out.write(String.valueOf(fileSize) + "C");
+            System.out.println("hello2");
+            out.write(charBuffer);
+            System.out.println("hello3");
         } else {
             throw new server2.EmptyFileException("File is empty");
         }
