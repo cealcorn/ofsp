@@ -12,7 +12,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.lang.Thread;
 
-public class Multithreadserver2 extends Thread {
+public class Multithreadserver2 {
     // private static final int MAX_CLIENT_MESSAGE_LENGTH = 2048;
     // private static final int MAX_CLIENT_FILE_PAYLOAD_SIZE = 1048576; // allow a
     // 1MB file (includes the file
@@ -237,23 +237,21 @@ public class Multithreadserver2 extends Thread {
 
         private static void sendFile(File file) throws EmptyFileException {
             if (file.length() != 0) {
-                char[] charBuffer = new char[(int) file.length()];
+                int fileSize = (int) file.length();
+                out.write(String.valueOf(fileSize) + "C");
                 FileReader fileReader;
+                char[] charBuffer = new char[fileSize];
                 try {
-                    fileReader = new FileReader(file.toString());
+                    fileReader = new FileReader(file);
                     fileReader.read(charBuffer);
                     fileReader.close();
+                    out.write(charBuffer);
                 } catch (FileNotFoundException e) {
                     System.out
                             .println("How did you not find this File reader? I already checked to see if you exist...");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-                String fileString = "";
-                for (int i = 0; i < file.length(); i++) {
-                    fileString += charBuffer[i];
-                }
-                out.println("C" + fileString);
             } else {
                 throw new handler.EmptyFileException("File is empty");
             }

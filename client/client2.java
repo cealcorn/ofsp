@@ -16,13 +16,15 @@ public class client2 {
 
     public static void main(String[] args) throws IOException {
 
-        if (args.length != 2) {
-            System.out.println("Usage: java client <server_ip> <server_port>");
-            return;
-        }
+        // if (args.length != 2) {
+        //     System.out.println("Usage: java client <server_ip> <server_port>");
+        //     return;
+        // }
 
-        int serverPort = Integer.parseInt(args[1]);
-        String serverIP = args[0];
+        // int serverPort = Integer.parseInt(args[1]);
+        // String serverIP = args[0];
+        int serverPort = 8080;
+        String serverIP = "localhost";
 
         getDirectorySeperator();
         char command;
@@ -96,25 +98,22 @@ public class client2 {
                         out.println(fileName);
 
                         String fileLengthString = "";
-                        int fileLength;
+                        int fileLength = 0;
+                        char[] buffer = new char[1];
                         boolean cont = true;
                         while(cont){
                             char currentReadChar = (char)in.read();
                             if((currentReadChar == 'C') || (currentReadChar == 'E')){
+                                fileLength = Integer.parseInt(fileLengthString);
+                                buffer = new char[fileLength];
+                                buffer[0] = currentReadChar;
                                 cont = false;
                             } else{
                                 fileLengthString += currentReadChar;
                             }
                         }
-                        fileLength = Integer.parseInt(fileLengthString);
 
-                        char[] buffer;
-                        CharBuffer charBuffer = CharBuffer.allocate(fileLength);
-
-                        in.read(charBuffer);
-
-                        charBuffer.limit(charBuffer.length());
-                        buffer = charBuffer.array();
+                        in.read(buffer);
 
                         if (buffer[0] != 'E') {
                             createFile(correctDirectorySeperator(fileName.substring(1)),
@@ -261,10 +260,12 @@ public class client2 {
 
     private static String sendFile(File file) {
         if (file.length() != 0) {
+            int fileSize = (int) file.length();
+            out.write(String.valueOf(fileSize) + "C");
             char[] charBuffer = new char[(int) file.length()];
             FileReader fileReader;
             try {
-                fileReader = new FileReader(file.toString());
+                fileReader = new FileReader(file);
                 fileReader.read(charBuffer);
                 fileReader.close();
             } catch (FileNotFoundException e) {

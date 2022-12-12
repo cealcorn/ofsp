@@ -10,6 +10,10 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.CharBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 public class server2 {
     private static final int MAX_CLIENT_MESSAGE_LENGTH = 2048;
@@ -171,7 +175,6 @@ public class server2 {
                                     throwError("File is empty, nothing to send");
                                     System.out.println("File is Empty for [" + downloadFile.getName() + "].");
                                 }
-                                System.out.println("done");
                                 break;
                             case 'U':
                                 payload = currentInput.substring(1);
@@ -284,12 +287,23 @@ public class server2 {
     private static void sendFile(File file) throws EmptyFileException {
         if (file.length() != 0) {
             int fileSize = (int) file.length();
-            char[] charBuffer = new char[fileSize];
+            out.write(String.valueOf(fileSize) + "C");
             FileReader fileReader;
+            // BufferedReader bufferedFile;
+            char[] charBuffer = new char[fileSize];
+            // CharBuffer charBuffer = CharBuffer.allocate(fileSize);
             try {
-                fileReader = new FileReader(file.toString());
+                
+                fileReader = new FileReader(file);
+                // bufferedFile = new BufferedReader(fileReader);
                 fileReader.read(charBuffer);
                 fileReader.close();
+                // String currentLine;
+                // while((currentLine = bufferedFile.readLine()) != null){
+                //     out.write(currentLine + "\n");
+                // }
+                // bufferedFile.close();
+                out.write(charBuffer);
             } catch (FileNotFoundException e) {
                 System.out.println("How did you not find this File reader? I already checked to see if you exist...");
             } catch (IOException e){
@@ -300,11 +314,7 @@ public class server2 {
             // for(int i=0;i<file.length();i++){
             //     fileString += charBuffer[i];
             // }
-            System.out.println("hello1");
-            out.write(String.valueOf(fileSize) + "C");
-            System.out.println("hello2");
-            out.write(charBuffer);
-            System.out.println("hello3");
+            // out.write(charBuffer);
         } else {
             throw new server2.EmptyFileException("File is empty");
         }
